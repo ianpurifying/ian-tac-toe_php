@@ -4,12 +4,6 @@
       "runtime": "vercel-php@0.5.0"
     }
   },
-  "builds": [
-    {
-      "src": "api/index.php",
-      "use": "@vercel/php"
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
