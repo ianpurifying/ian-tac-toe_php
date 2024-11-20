@@ -365,10 +365,5 @@ $currentPlayer = $_SESSION['current_player'];
         <p>Made with ❤️ by <a href="https://facebook.com/ianpurifying" target="_blank">IAN PURIFICACION</a></p>
         <p style="font-size: 0.8rem; font-style: italic;">Copyright <?= date("Y") ?>. All rights reserved.</p>
     </footer>
-
-    <!-- Background Music -->
-    <audio id="background-music" loop autoplay>
-        <source src="lofi-background.mp3" type="audio/mp3">
-    </audio>
 </body>
 </html>
