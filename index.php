@@ -1,66 +1,70 @@
 <?php
 session_start();
 
-// Initialize game history if not already set
-if (!isset($_SESSION['game_history'])) {
-    $_SESSION['game_history'] = [];
-}
-
 // Initialize game state if not already set
-if (!isset($_SESSION['board'])) {
-    $_SESSION['board'] = array_fill(0, 9, null);
-    $_SESSION['current_player'] = 'X';
+if (!isset($_SESSION['game'])) {
+    initializeGame();
 }
 
-// Handle form submissions for restarting the game or saving results
+// Process form requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['move'])) {
-        // Update the game board with the selected move
-        $index = (int)$_POST['move'];
-        if (!$_SESSION['board'][$index]) {
-            $_SESSION['board'][$index] = $_SESSION['current_player'];
-            $_SESSION['current_player'] = $_SESSION['current_player'] === 'X' ? 'O' : 'X';
-        }
-
-        // Check for game result (win or draw)
-        $result = checkResult($_SESSION['board']);
-        if ($result) {
-            $_SESSION['game_history'][] = "Game " . (count($_SESSION['game_history']) + 1) . ": " . $result;
-            $_SESSION['result'] = $result;
-            $_SESSION['board'] = array_fill(0, 9, null); // Reset board
-        }
+        handleMove((int)$_POST['move']);
     } elseif (isset($_POST['restart'])) {
-        // Reset game board and turn
-        $_SESSION['board'] = array_fill(0, 9, null);
-        $_SESSION['current_player'] = 'X';
-        unset($_SESSION['result']);
+        initializeGame();
     }
 }
 
-// Function to check for win or draw
-function checkResult($board) {
+// Initialize or reset the game state
+function initializeGame()
+{
+    $_SESSION['game'] = [
+        'board' => array_fill(0, 9, null),
+        'current_player' => 'X',
+        'game_history' => $_SESSION['game']['game_history'] ?? [],
+        'result' => null,
+    ];
+}
+
+// Handle a player move
+function handleMove($index)
+{
+    $game = &$_SESSION['game'];
+    if ($game['board'][$index] === null && $game['result'] === null) {
+        $game['board'][$index] = $game['current_player'];
+        $game['result'] = checkResult($game['board']);
+        if ($game['result']) {
+            $game['game_history'][] = "Game " . (count($game['game_history']) + 1) . ": " . $game['result'];
+        } else {
+            $game['current_player'] = $game['current_player'] === 'X' ? 'O' : 'X';
+        }
+    }
+}
+
+// Check for win, draw, or ongoing game
+function checkResult($board)
+{
     $winningCombinations = [
         [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-        [0, 4, 8], [2, 4, 6],           // Diagonals
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
+        [0, 4, 8], [2, 4, 6],           // Diags
     ];
 
-    foreach ($winningCombinations as $combination) {
-        [$a, $b, $c] = $combination;
+    foreach ($winningCombinations as [$a, $b, $c]) {
         if ($board[$a] && $board[$a] === $board[$b] && $board[$a] === $board[$c]) {
-            return $board[$a] . " won!";
+            return "{$board[$a]} won!";
         }
     }
 
-    if (!in_array(null, $board, true)) {
-        return "Draw!";
-    }
-
-    return null; // Game is ongoing
+    return in_array(null, $board, true) ? null : "Draw!";
 }
 
-$board = $_SESSION['board'];
-$currentPlayer = $_SESSION['current_player'];
+// Extract game variables for use in the view
+$game = $_SESSION['game'];
+$board = $game['board'];
+$currentPlayer = $game['current_player'];
+$result = $game['result'];
+$gameHistory = $game['game_history'];
 ?>
 
 <!DOCTYPE html>
@@ -68,7 +72,9 @@ $currentPlayer = $_SESSION['current_player'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="images/cat.jpg">
     <title>IAN-TAC-TOE</title>
+
     <style>
         /* Base Styles */
         body {
@@ -79,13 +85,79 @@ $currentPlayer = $_SESSION['current_player'];
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #ffcb77; /* Warm, bold background color */
-            color: #f53c2b; /* Bold text color */
+            background: linear-gradient(135deg, #ffcb77, #f7a5a1);
+            color: #f53c2b;
             overflow: hidden;
-            background: linear-gradient(135deg, #ffcb77, #f7a5a1); /* Warm gradient */
         }
 
-        /* Container for Game History and Game Board */
+        /* Header Styles */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .logo {
+            width: 100px;
+            height: 85px;
+            border-radius: 30px;
+            margin-right: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #f53c2b;
+            text-align: center;
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #ff7f50, #ffcc00);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .title::before,
+        .title::after {
+            content: '';
+            position: absolute;
+            background-color: #ffffff;
+            border-radius: 50%;
+            animation: cloudAnimation 10s infinite ease-in-out;
+        }
+
+        .title::before {
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 80px;
+            transform: translate(-50%, -50%);
+        }
+
+        .title::after {
+            top: 20%;
+            left: 70%;
+            width: 250px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes cloudAnimation {
+            0% {
+                transform: translateX(-100%) translateY(0);
+            }
+            50% {
+                transform: translateX(100%) translateY(-20px);
+            }
+            100% {
+                transform: translateX(-100%) translateY(0);
+            }
+        }
+
+        /* Container Styles */
         .container {
             display: flex;
             width: 100%;
@@ -101,8 +173,8 @@ $currentPlayer = $_SESSION['current_player'];
         .game-history {
             width: 30%;
             padding: 20px;
-            border-right: 2px solid #ff9f68; /* Bold border for separation */
-            background: linear-gradient(135deg, #ff9f68, #ffcb77); /* Gradient background */
+            border-right: 2px solid #ff9f68;
+            background: linear-gradient(135deg, #ff9f68, #ffcb77);
             display: flex;
             flex-direction: column;
         }
@@ -110,15 +182,13 @@ $currentPlayer = $_SESSION['current_player'];
         .game-history h3 {
             font-size: 2rem;
             text-align: center;
-            font-family: Arial, sans-serif;
-            color: #f53c2b; /* Bold text color */
+            color: #f53c2b;
             margin-bottom: 15px;
         }
 
         .game-history .history-table {
             max-height: 400px;
             overflow-y: auto;
-            margin-top: 10px;
         }
 
         .game-history table {
@@ -130,7 +200,6 @@ $currentPlayer = $_SESSION['current_player'];
             padding: 10px;
             font-size: 1.2rem;
             text-align: left;
-            font-family: Arial, sans-serif;
             color: #333;
         }
 
@@ -163,7 +232,6 @@ $currentPlayer = $_SESSION['current_player'];
             font-size: 2rem;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            font-family: Arial, sans-serif;
             color: #f53c2b;
             border-radius: 15px;
             width: 90px;
@@ -183,7 +251,6 @@ $currentPlayer = $_SESSION['current_player'];
         #player-turn {
             margin-top: 20px;
             font-size: 1.2rem;
-            font-family: Arial, sans-serif;
             color: #f53c2b;
         }
 
@@ -209,7 +276,6 @@ $currentPlayer = $_SESSION['current_player'];
         }
 
         .modal-content p {
-            font-family: Arial, sans-serif;
             color: #f53c2b;
             font-size: 1.4rem;
         }
@@ -222,7 +288,6 @@ $currentPlayer = $_SESSION['current_player'];
             border: none;
             border-radius: 20px;
             cursor: pointer;
-            font-family: Arial, sans-serif;
             transition: background-color 0.3s ease-in-out;
         }
 
@@ -234,71 +299,64 @@ $currentPlayer = $_SESSION['current_player'];
             display: flex;
         }
 
-        .title {
-            font-size: 4rem; /* Bigger font size for prominence */
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-            color: #f53c2b; /* Bold color for the text */
-            margin: 40px 0;
-            text-align: center;
-            position: relative;
-            display: inline-block;
-            padding: 10px 20px;
-            border-radius: 10px;
-            background: linear-gradient(45deg, #ff7f50, #ffcc00); /* Exaggerated gradient */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Cloud-like animation behind the title */
-        .title::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 200px;
-            height: 80px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            animation: cloudAnimation 10s infinite ease-in-out;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Additional floating clouds */
-        .title::after {
-            content: '';
-            position: absolute;
-            top: 20%;
-            left: 70%;
-            width: 250px;
-            height: 100px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            animation: cloudAnimation 12s infinite ease-in-out;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Cloud movement animation */
-        @keyframes cloudAnimation {
-            0% {
-                transform: translateX(-100%) translateY(0);
-            }
-            50% {
-                transform: translateX(100%) translateY(-20px);
-            }
-            100% {
-                transform: translateX(-100%) translateY(0);
-            }
-        }
-
-        /* Footer Section */
+        /* Footer Styles */
         footer {
             width: 100%;
+            height: 100%;
             background-color: #333;
             color: #fff;
             padding: 20px 0;
-            text-align: center;
-            font-family: Arial, sans-serif;
             margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Footer container for layout */
+        .footer-container {
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+        }
+
+        /* Left side logo */
+        .footer-logo .logo {
+            width: 50px;
+            height: auto;
+            border-radius: 50%;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .footer-logo .logo:hover {
+            transform: scale(1.1);
+        }
+
+        /* Footer Links */
+        .footer-links {
+            text-align: center;
+        }
+
+        /* Social media logo links */
+        .logo-links {
+            margin-top: 10px;
+        }
+
+        .logo-links a {
+            margin: 0 10px;
+            display: inline-block;
+        }
+
+        .social-logo {
+            width: 30px;
+            height: 30px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-logo:hover {
+            transform: scale(1.2);
         }
 
         footer a {
@@ -310,11 +368,17 @@ $currentPlayer = $_SESSION['current_player'];
         footer .copyright {
             font-size: 1rem;
             margin-top: 10px;
+            font-style: italic;
         }
+
     </style>
+
 </head>
 <body>
-    <div class="title">IAN-TAC-TOE</div>
+    <div class="header">
+        <img src="images/cat.jpg" alt="Game Logo" class="logo">
+        <div class="title">IAN-TAC-TOE</div>
+    </div>
 
     <div class="container">
         <!-- Game History -->
@@ -323,10 +387,8 @@ $currentPlayer = $_SESSION['current_player'];
             <div class="history-table">
                 <table>
                     <tbody>
-                        <?php foreach ($_SESSION['game_history'] as $history): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($history) ?></td>
-                            </tr>
+                        <?php foreach ($gameHistory as $history): ?>
+                            <tr><td><?= htmlspecialchars($history) ?></td></tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -337,23 +399,24 @@ $currentPlayer = $_SESSION['current_player'];
         <div class="game-board">
             <form method="POST">
                 <div id="board">
-                    <?php for ($i = 0; $i < 9; $i++): ?>
-                        <button class="cell <?= $board[$i] ? 'taken' : '' ?>" name="move" value="<?= $i ?>" <?= $board[$i] ? 'disabled' : '' ?>>
-                            <?= htmlspecialchars($board[$i] ?? '') ?>
+                    <?php foreach ($board as $i => $cell): ?>
+                        <button class="cell <?= $cell ? 'taken' : '' ?>" 
+                                name="move" 
+                                value="<?= $i ?>" 
+                                <?= $cell ? 'disabled' : '' ?>>
+                            <?= htmlspecialchars($cell ?? '') ?>
                         </button>
-                    <?php endfor; ?>
+                    <?php endforeach; ?>
                 </div>
-                <div id="player-turn">
-                    <p>Current Turn: <span id="current-player"><?= htmlspecialchars($currentPlayer) ?></span></p>
-                </div>
+                <p id="player-turn">Current Turn: <?= htmlspecialchars($currentPlayer) ?></p>
             </form>
         </div>
     </div>
 
     <!-- Result Modal -->
-    <div id="result-modal" class="modal <?= isset($_SESSION['result']) ? 'show' : '' ?>">
+    <div id="result-modal" class="modal <?= $result ? 'show' : '' ?>">
         <div class="modal-content">
-            <p id="result-message"><?= $_SESSION['result'] ?? '' ?></p>
+            <p id="result-message"><?= htmlspecialchars($result) ?></p>
             <form method="POST">
                 <button name="restart">Restart Game</button>
             </form>
@@ -362,8 +425,24 @@ $currentPlayer = $_SESSION['current_player'];
 
     <!-- Footer Section -->
     <footer>
-        <p>Made with ❤️ by <a href="https://facebook.com/ianpurifying" target="_blank">IAN PURIFICACION</a></p>
-        <p style="font-size: 0.8rem; font-style: italic;">Copyright <?= date("Y") ?>. All rights reserved.</p>
+        <div class="footer-container">
+            <!-- Left side: Logo Image -->
+            <div class="footer-logo">
+                <img src="images/dogs.png" alt="Logo" class="logo">
+            </div>
+            
+            <!-- Right side: Logo Links -->
+            <div class="footer-links">
+                <p>Made with 👺 by <a href="https://facebook.com/ianpurifying" target="_blank">IAN PURIFICACION</a></p>
+                <p>&copy; <?= date("Y") ?>. All rights reserved.</p>
+                <div class="logo-links">
+                    <a href="https://facebook.com/ianpurifying" target="_blank"><img src="images/fb_logo.png" alt="Facebook" class="social-logo"></a>
+                    <a href="https://twitter.com/elonmusk" target="_blank"><img src="images/x_logo.png" alt="Twitter" class="social-logo"></a>
+                    <a href="https://instagram.com/zuck" target="_blank"><img src="images/ig_logo.png" alt="Instagram" class="social-logo"></a>
+                </div>
+            </div>
+        </div>
     </footer>
+
 </body>
 </html>
