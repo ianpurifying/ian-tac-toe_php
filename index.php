@@ -7,15 +7,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/jpeg" href="styles/images/dogs.png">
+    <link rel="icon" type="image/jpeg" href="styles/images/chillguy.png">
     <link rel="stylesheet" href="styles/styles.css">
-    <title>IAN-TAC-TOE</title>
+    <title>IAN-CHILL-TOE</title>
 </head>
 
 <body>
     <div class="header">
-        <img src="styles/images/cat.jpg" alt="Game Logo" class="logo">
-        <div class="title">IAN-TAC-TOE</div>
+        <img src="styles/images/chillguy.png" alt="Game Logo" class="logo">
+        <div class="title">IAN-CHILL-TOE</div>
     </div>
 
     <div class="container">
@@ -65,7 +65,7 @@
     <footer>
         <div class="footer-container">
             <div class="footer-logo">
-                <img src="styles/images/dogs.png" alt="Logo" class="logo">
+                <a href="https://cdscdb.edu.ph/" target="_blank"><img src="styles/images/cdscdb_logo.jpg" alt="Logo" class="logo"></a> 
             </div>
             
             <div class="footer-links">
