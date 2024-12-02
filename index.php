@@ -7,14 +7,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/jpeg" href="styles/images/chillguy.png">
+    <link rel="icon" type="image/jpeg" href="styles/images/chillguy.jpg">
     <link rel="stylesheet" href="styles/styles.css">
     <title>IAN-CHILL-TOE</title>
 </head>
 
 <body>
+    <div class="shooting-star" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+    <div class="shooting-star" style="top: 40%; left: 50%; animation-delay: 0.5s;"></div>
+    <div class="shooting-star" style="top: 60%; left: 30%; animation-delay: 1s;"></div>
+    <div class="shooting-star" style="top: 80%; left: 70%; animation-delay: 1.5s;"></div>
+
     <div class="header">
-        <img src="styles/images/chillguy.png" alt="Game Logo" class="logo">
+        <img src="styles/images/chillguy.jpg" alt="Game Logo" class="logo">
         <div class="title">IAN-CHILL-TOE</div>
     </div>
 

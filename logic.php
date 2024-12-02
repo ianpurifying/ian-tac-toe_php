@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Initialize or reset the game state
+// Reset the game state
 function initializeGame()
 {
     $_SESSION['game'] = [
@@ -41,7 +41,7 @@ function handleMove($index)
     }
 }
 
-// Check for win, draw, or ongoing game
+// Check for result
 function checkResult($board)
 {
     $winningCombinations = [
