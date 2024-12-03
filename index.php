@@ -74,7 +74,7 @@
             </div>
             
             <div class="footer-links">
-                <p>Made with 👺 by <a href="https://facebook.com/ianpurifying" target="_blank">IAN PURIFICACION</a></p>
+                <p>Made by <a href="https://facebook.com/ianpurifying" target="_blank">IAN PURIFICACION</a></p>
                 <p>&copy; <?= date("Y") ?>. All rights reserved.</p>
                 <div class="logo-links">
                     <a href="https://facebook.com/ianpurifying" target="_blank"><img src="styles/images/fb_logo.png" alt="Facebook" class="social-logo"></a>
